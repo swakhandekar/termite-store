@@ -47,14 +47,13 @@ private object GossipSynTest {
     state
   }
 
-  val expectedMessage: TransferableGossipMessage = {
+  val expectedMessage: SynGossipMessage = {
     val knownHostsList = Set(
       NodeVersion(knownNode2, version2.toString),
       NodeVersion(knownNode1, version1.toString),
       NodeVersion(selfIdentity, currentNodeState.fetchVersion().toString)
     )
 
-    val gm = SynGossipMessage(knownHostsList)
-    TransferableGossipMessage(Syn, gm)
+    SynGossipMessage(knownHostsList)
   }
 }

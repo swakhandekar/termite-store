@@ -14,14 +14,19 @@ class GossipSyn(nodeState: NodeState, tcpRequestSender: TcpRequestSender) extend
     val selfVersion = NodeVersion(nodeState.nodeIdentity, nodeState.fetchVersion().toString)
     val nodeVersions = (nodeState.fetchAllAvailableVersions() :+ selfVersion).toSet
 
-    val message = TransferableGossipMessage(Syn, SynGossipMessage(nodeVersions))
+    val message = SynGossipMessage(nodeVersions)
     val nodeGossipAddress = new InetSocketAddress(node.inetAddress, node.gossipPort)
-    tcpRequestSender.send(nodeGossipAddress, message.deserialize)
+    tcpRequestSender.send(nodeGossipAddress, message.deserialize())
   }
 
   private def chooseOneReachableNode(reachableNodes: mutable.Set[NodeIdentity]) = {
     val random = new Random()
-    reachableNodes.toArray.apply(random.nextInt() % reachableNodes.size)
+    val i = {
+      val r = random.nextInt()
+      if(r < 0) -r else r
+    }
+
+    reachableNodes.toArray.apply(i % reachableNodes.size)
   }
 
   override def run(): Unit = {
