@@ -1,3 +1,3 @@
-package swapnil.meta.gossip
+package swapnil.meta
 
 case class NodeIdentity(inetAddress: String, dataPort: Int, gossipPort: Int)

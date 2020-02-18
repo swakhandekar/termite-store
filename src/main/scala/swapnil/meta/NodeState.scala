@@ -1,19 +1,17 @@
 package swapnil.meta
 
-import java.util.{Calendar, Date, TimeZone}
+import java.time.Instant
+import java.util.Date
 
-import swapnil.meta.gossip.{NodeIdentity, NodeVersion}
+import swapnil.meta.gossip.NodeVersion
+import swapnil.meta.utils.RichUtils._
 
 import scala.collection.mutable
 
-class NodeState(val nodeIdentity: NodeIdentity, seedNodes: Set[NodeIdentity]) {
+class NodeState(val selfIdentity: NodeIdentity) {
   private var version = getCurrentTime
 
-  private val reachableNodes: mutable.Set[NodeIdentity] = {
-    val set = mutable.Set[NodeIdentity]()
-    seedNodes.foreach(n => set.add(n))
-    set
-  }
+  private val reachableNodes: mutable.Set[NodeIdentity] = mutable.Set[NodeIdentity]()
 
   private val unReachableNodes: mutable.Set[NodeIdentity] = mutable.Set()
   private val nodeVsVersionMap: mutable.Map[NodeIdentity, Date] = mutable.Map()
@@ -24,21 +22,28 @@ class NodeState(val nodeIdentity: NodeIdentity, seedNodes: Set[NodeIdentity]) {
 
   def fetchVersion(): Date = version
 
-  def fetchAllAvailableVersions(): List[NodeVersion] = {
-    nodeVsVersionMap.toList.map(el => NodeVersion(el._1, el._2.toString))
+  def fetchAllAvailableVersions(): Map[NodeIdentity, Date] = nodeVsVersionMap.toMap
+
+  def fetchVersionsOf(nodes: Set[NodeIdentity]): Set[NodeVersion] = {
+    nodes.map(ni => {
+      if (ni == selfIdentity)
+        NodeVersion(selfIdentity, fetchVersion().toFormattedDateString)
+      else
+        NodeVersion(ni, nodeVsVersionMap(ni).toFormattedDateString)
+    })
   }
 
-  def updateNodeInfo(nodeIdentity: NodeIdentity, version: Date): Unit = {
-    updateReachable(nodeIdentity)
-    nodeVsVersionMap.update(nodeIdentity, version)
+  def updateNodeInfo(nodeVersion: NodeVersion): Unit = {
+    updateReachable(nodeVersion.identity)
+    nodeVsVersionMap.update(nodeVersion.identity, nodeVersion.version.toDate)
 
     updateVersion()
   }
 
   private def updateVersion(): Unit = version = getCurrentTime
 
-  private def getCurrentTime = {
-    Calendar.getInstance(TimeZone.getTimeZone("GMT")).getTime
+  private def getCurrentTime: Date = {
+    Date.from(Instant.now())
   }
 
   private def updateReachable(nodeIdentity: NodeIdentity): Unit = {
@@ -51,10 +56,3 @@ class NodeState(val nodeIdentity: NodeIdentity, seedNodes: Set[NodeIdentity]) {
     reachableNodes.remove(nodeIdentity)
   }
 }
-
-
-/*
-ip
-heartbeat stage -> time stamp
-health
-*/

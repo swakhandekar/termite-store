@@ -3,35 +3,44 @@ package swapnil.meta.gossip
 import java.nio.ByteBuffer
 
 import boopickle.Default._
-
-sealed trait GossipMessageType
+import swapnil.meta.NodeIdentity
 
 sealed trait GossipMessage
 
-case class NodeVersion(ni: NodeIdentity, version: String)
+case class NodeVersion(identity: NodeIdentity, version: String)
 
-case class SynGossipMessage(knownNodeVersions: Set[NodeVersion]) extends GossipMessage {
-  private val TYPE_CODE: Byte = 0.byteValue()
-
+case class SynGossipMessage(knownNodeVersions: Map[NodeIdentity, String]) extends GossipMessage {
   def deserialize(): Array[Byte] = {
-    TYPE_CODE +: Pickle.intoBytes(this).array()
+    Pickle.intoBytes[SynGossipMessage](this).array()
   }
 }
 
-case class SynAckGossipMessage(updatedNodes: Set[NodeVersion], sendMe: Set[NodeVersion]) extends GossipMessage {
-  private val TYPE_CODE: Byte = 1.byteValue()
-
-  def deserialize(): Array[Byte] = {
-    TYPE_CODE +: Pickle.intoBytes(this).array()
+object SynGossipMessage {
+  def parse(bytes: Array[Byte]): SynGossipMessage = {
+    Unpickle.apply[SynGossipMessage].fromBytes(ByteBuffer.wrap(bytes))
   }
 }
 
-object GossipMessage {
-  def parse(bytes: Array[Byte]): GossipMessage = {
-    val firstByte = bytes(0)
+case class SynAckGossipMessage(updatedNodes: Set[NodeVersion], sendMe: Set[NodeIdentity]) extends GossipMessage {
+  def deserialize(): Array[Byte] = {
+    Pickle.intoBytes[SynAckGossipMessage](this).array()
+  }
+}
 
-    if (firstByte == 0.byteValue()) Unpickle.apply[SynGossipMessage].fromBytes(ByteBuffer.wrap(bytes.tail))
-    else if (firstByte == 1.byteValue()) Unpickle.apply[SynAckGossipMessage].fromBytes(ByteBuffer.wrap(bytes.tail))
-    else ???
+object SynAckGossipMessage {
+  def parse(bytes: Array[Byte]): SynAckGossipMessage = {
+    Unpickle.apply[SynAckGossipMessage].fromBytes(ByteBuffer.wrap(bytes))
+  }
+}
+
+case class SynAck2GossipMessage(data: Set[NodeVersion]) extends GossipMessage {
+  def deserialize(): Array[Byte] = {
+    Pickle.intoBytes[SynAck2GossipMessage](this).array()
+  }
+}
+
+object SynAck2GossipMessage {
+  def parse(bytes: Array[Byte]): SynAck2GossipMessage = {
+    Unpickle.apply[SynAck2GossipMessage].fromBytes(ByteBuffer.wrap(bytes))
   }
 }
