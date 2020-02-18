@@ -28,8 +28,7 @@ class GossipHandler(nodeState: NodeState, simpleSocketClient: SimpleSocketClient
     val sendMe = calculateUpdatedNodesClientHas(receivedNodeVersions, knownNodeVersions)
     val updatedNodes = calculateUpdatedNodesThisNodeHas(knownNodeVersions, receivedNodeVersions)
 
-    val updatedNodesSet = updatedNodes.map(n => NodeVersion(n._1, n._2.toFormattedDateString)).toSet
-    val synAckGossipMessage: SynAckGossipMessage = SynAckGossipMessage(updatedNodesSet, sendMe.keySet)
+    val synAckGossipMessage: SynAckGossipMessage = SynAckGossipMessage(updatedNodes, sendMe.keySet)
     messageProtocol.writeMessage(outputStream, synAckGossipMessage.deserialize())
   }
 
@@ -45,7 +44,7 @@ class GossipHandler(nodeState: NodeState, simpleSocketClient: SimpleSocketClient
         } else {
           true
         }
-    }
+    }.map(kv => (kv._1, kv._2.toFormattedDateString))
   }
 
   private def calculateUpdatedNodesClientHas(receivedNodeVersions: Map[NodeIdentity, String], knownNodeVersions: Map[NodeIdentity, Date]) = {
@@ -60,7 +59,7 @@ class GossipHandler(nodeState: NodeState, simpleSocketClient: SimpleSocketClient
 
   private def handleSynAck2(synAck2GossipMessage: SynAck2GossipMessage): Unit = {
     synAck2GossipMessage.data.foreach(nv => {
-      nodeState.updateNodeInfo(nv)
+      nodeState.updateNodeInfo(nv._1, nv._2.toDate)
       println(s"INFO: [${nodeState.selfIdentity}] Handled SynAck2: updated $nv")
     })
   }

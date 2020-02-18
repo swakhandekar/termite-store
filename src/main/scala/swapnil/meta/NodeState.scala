@@ -3,7 +3,6 @@ package swapnil.meta
 import java.time.Instant
 import java.util.Date
 
-import swapnil.meta.gossip.NodeVersion
 import swapnil.meta.utils.RichUtils._
 
 import scala.collection.mutable
@@ -24,27 +23,25 @@ class NodeState(val selfIdentity: NodeIdentity) {
 
   def fetchAllAvailableVersions(): Map[NodeIdentity, Date] = nodeVsVersionMap.toMap
 
-  def fetchVersionsOf(nodes: Set[NodeIdentity]): Set[NodeVersion] = {
+  def fetchVersionsOf(nodes: Set[NodeIdentity]): Map[NodeIdentity, String] = {
     nodes.map(ni => {
       if (ni == selfIdentity)
-        NodeVersion(selfIdentity, fetchVersion().toFormattedDateString)
+        (selfIdentity, fetchVersion().toFormattedDateString)
       else
-        NodeVersion(ni, nodeVsVersionMap(ni).toFormattedDateString)
-    })
+        (ni, nodeVsVersionMap(ni).toFormattedDateString)
+    }).toMap
   }
 
-  def updateNodeInfo(nodeVersion: NodeVersion): Unit = {
-    updateReachable(nodeVersion.identity)
-    nodeVsVersionMap.update(nodeVersion.identity, nodeVersion.version.toDate)
+  def updateNodeInfo(node: NodeIdentity, version: Date): Unit = {
+    updateReachable(node)
+    nodeVsVersionMap.update(node, version)
 
     updateVersion()
   }
 
   private def updateVersion(): Unit = version = getCurrentTime
 
-  private def getCurrentTime: Date = {
-    Date.from(Instant.now())
-  }
+  private def getCurrentTime: Date = Date.from(Instant.now())
 
   private def updateReachable(nodeIdentity: NodeIdentity): Unit = {
     reachableNodes.add(nodeIdentity)

@@ -8,7 +8,7 @@ import swapnil.meta.communication.{SimpleSocketClient, SocketClientFactory}
 import swapnil.meta.utils.RichUtils._
 
 class Gossiper(nodeState: NodeState, socketClientFactory: SocketClientFactory, messageProtocol: MessageProtocol) {
-  def gossipWith(node: NodeIdentity): Unit = {
+  def initGossipWith(node: NodeIdentity): Unit = {
     val simpleSocketClient: SimpleSocketClient = socketClientFactory.newSocketClient
     val address = new InetSocketAddress(node.inetAddress, node.gossipPort)
     val (inputStream, outputStream) = simpleSocketClient.init(address)
@@ -20,7 +20,7 @@ class Gossiper(nodeState: NodeState, socketClientFactory: SocketClientFactory, m
     println(s"INFO: [${nodeState.selfIdentity}] SynAck received from $node")
 
     synAckGossipMessage.updatedNodes.foreach(nv => {
-      nodeState.updateNodeInfo(nv)
+      nodeState.updateNodeInfo(nv._1, nv._2.toDate)
       println(s"INFO: [${nodeState.selfIdentity}] Handled SynAck: updated $nv")
     })
 

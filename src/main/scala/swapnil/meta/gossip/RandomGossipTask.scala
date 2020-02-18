@@ -12,10 +12,8 @@ class RandomGossipTask(nodeState: NodeState, gossiper: Gossiper) extends TimerTa
   override def run(): Unit = {
     val reachableNodes = nodeState.fetchReachableNodes
 
-    if (reachableNodes.nonEmpty) {
-      gossiper.gossipWith(chooseOneReachableNode(reachableNodes))
-
-    } else println(s"INFO: [${nodeState.selfIdentity}] No other node available to start the gossip")
+    if (reachableNodes.nonEmpty) gossiper.initGossipWith(chooseOneReachableNode(reachableNodes))
+    else println(s"INFO: [${nodeState.selfIdentity}] No other node available to start the gossip")
   }
 
   private def chooseOneReachableNode(reachableNodes: mutable.Set[NodeIdentity]): NodeIdentity = {

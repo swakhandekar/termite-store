@@ -16,7 +16,7 @@ class Node(seedNodes: Set[NodeIdentity], dataPort: Int, gossipPort: Int) {
     initGossip()
   }
 
-  def stop(): Unit = {}
+  def stop(): Unit = ???
 
   private def initGossip(): Unit = {
     val tcpRequestSender = new SimpleSocketClient()
@@ -27,7 +27,7 @@ class Node(seedNodes: Set[NodeIdentity], dataPort: Int, gossipPort: Int) {
     val gossiper = new Gossiper(nodeState, socketClientFactory, messageProtocol)
 
     gossipServer.start()
-    if(seedNodes.nonEmpty) gossiper.gossipWith(seedNodes.head)
+    if(seedNodes.nonEmpty) gossiper.initGossipWith(seedNodes.head)
     new Timer().scheduleAtFixedRate(new RandomGossipTask(nodeState, gossiper), 0, 1000)
   }
 }

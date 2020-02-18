@@ -7,8 +7,6 @@ import swapnil.meta.NodeIdentity
 
 sealed trait GossipMessage
 
-case class NodeVersion(identity: NodeIdentity, version: String)
-
 case class SynGossipMessage(knownNodeVersions: Map[NodeIdentity, String]) extends GossipMessage {
   def deserialize(): Array[Byte] = {
     Pickle.intoBytes[SynGossipMessage](this).array()
@@ -21,7 +19,7 @@ object SynGossipMessage {
   }
 }
 
-case class SynAckGossipMessage(updatedNodes: Set[NodeVersion], sendMe: Set[NodeIdentity]) extends GossipMessage {
+case class SynAckGossipMessage(updatedNodes: Map[NodeIdentity, String], sendMe: Set[NodeIdentity]) extends GossipMessage {
   def deserialize(): Array[Byte] = {
     Pickle.intoBytes[SynAckGossipMessage](this).array()
   }
@@ -33,7 +31,7 @@ object SynAckGossipMessage {
   }
 }
 
-case class SynAck2GossipMessage(data: Set[NodeVersion]) extends GossipMessage {
+case class SynAck2GossipMessage(data: Map[NodeIdentity, String]) extends GossipMessage {
   def deserialize(): Array[Byte] = {
     Pickle.intoBytes[SynAck2GossipMessage](this).array()
   }
