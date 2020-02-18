@@ -3,9 +3,9 @@ package swapnil.meta.gossip
 import java.io.DataOutputStream
 import java.net.InetSocketAddress
 
-import swapnil.meta.{NodeIdentity, NodeState}
 import swapnil.meta.communication.{SimpleSocketClient, SocketClientFactory}
 import swapnil.meta.utils.RichUtils._
+import swapnil.meta.{NodeIdentity, NodeState}
 
 class Gossiper(nodeState: NodeState, socketClientFactory: SocketClientFactory, messageProtocol: MessageProtocol) {
   def initGossipWith(node: NodeIdentity): Unit = {
